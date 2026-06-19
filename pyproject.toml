@@ -7,7 +7,7 @@ name = "llm-playground"
 version = "0.1.0"
 description = "An example repository for training LLaMA-style LLM models and serving with RAG using FastAPI"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [
     { name = "theoariandi92", email = "theoariandi92@gmail.com" }
