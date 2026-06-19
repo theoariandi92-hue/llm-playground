@@ -71,7 +71,17 @@ cd llm-playground
 ```bash
 python -m venv .venv
 source .venv/bin/activate
+# (optional) install the UV package manager
+# - install inside the virtual environment:
+pip install uv
+# - or install system-wide using pipx:
+# pipx install uv
+
+# then install project dependencies (if you prefer requirements file):
 pip install -r requirements.txt
+
+# or, if using UV, install dependencies via UV (see pyproject.toml):
+# uv install
 ```
 
 3. Place model weights
