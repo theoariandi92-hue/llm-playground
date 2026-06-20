@@ -1,2 +1,4 @@
 /llm-playground.code-workspace
 /uv.lock
+
+/src/llm-playground/__pycache__/
