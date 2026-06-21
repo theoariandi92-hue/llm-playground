@@ -7,6 +7,11 @@ from llm_playground.customer_feedback.prompts import (
     CUSTOMER_FEEDBACK_USER_TEMPLATE,
 )
 
+import json
+
+from llm_playground.customer_feedback.models import (
+    CustomerFeedbackAnalysis,
+)
 
 class CustomerFeedbackAnalyst:
 
@@ -37,6 +42,13 @@ class CustomerFeedbackAnalyst:
             },
         ]
 
-        return self.provider.generate(
+        response = self.provider.generate(
             messages
         )
+
+        data = json.loads(response)
+
+        return CustomerFeedbackAnalysis(
+            **data
+        )
+    
