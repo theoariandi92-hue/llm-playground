@@ -19,6 +19,8 @@ result = analyst.analyze(
     feedback=feedback
 )
 
+print(type(result))
+
 print(result.topic)
 print(result.sentiment)
 print(result.summary)
