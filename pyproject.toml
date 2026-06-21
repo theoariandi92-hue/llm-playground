@@ -39,6 +39,8 @@ dependencies = [
     "uvicorn[standard]>=0.24.0",
     "pydantic>=2.0.0",
     "python-multipart>=0.0.6",
+    "ollama>=0.6.2",
+    "openai>=2.43.0",
 ]
 
 [project.optional-dependencies]
