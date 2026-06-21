@@ -2,6 +2,7 @@ from ollama import chat
 
 
 class OllamaProvider:
+
     def __init__(
         self,
         model: str = "qwen3:8b",
@@ -10,17 +11,12 @@ class OllamaProvider:
 
     def generate(
         self,
-        prompt: str,
+        messages: list[dict],
     ) -> str:
 
         response = chat(
             model=self.model,
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ],
+            messages=messages,
         )
 
         return response.message.content
