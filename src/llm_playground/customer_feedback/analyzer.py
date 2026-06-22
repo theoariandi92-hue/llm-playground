@@ -27,7 +27,7 @@ class CustomerFeedbackAnalyst:
     def analyze(
         self,
         feedback: str,
-    ) -> str:
+    ) -> CustomerFeedbackAnalysis:
 
         messages = [
             {

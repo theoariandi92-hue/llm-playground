@@ -43,18 +43,6 @@ class CustomerFeedbackEvaluator:
                 row["feedback"]
             )
 
-            if output_path:
-
-                Path(output_path).parent.mkdir(
-                    parents=True,
-                    exist_ok=True,
-                )
-
-                df.to_csv(
-                    output_path,
-                    index=False,
-                )
-
             latency = (
                 time.time()
                 - start
@@ -81,6 +69,18 @@ class CustomerFeedbackEvaluator:
             [df, predictions],
             axis=1,
         )
+
+        if output_path:
+
+            Path(output_path).parent.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+
+            df.to_csv(
+                output_path,
+                index=False,
+            )
 
         topic_accuracy = (
             df["expected_topic"]
