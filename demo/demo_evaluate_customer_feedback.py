@@ -14,6 +14,7 @@ evaluator = CustomerFeedbackEvaluator(
 
 result = evaluator.evaluate(
     "data/customer_feedback_eval.csv",
+    output_path="output/predictions.csv",
 )
 
 print(
