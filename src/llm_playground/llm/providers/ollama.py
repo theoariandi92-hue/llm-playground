@@ -18,6 +18,7 @@ class OllamaProvider:
         response = chat(
             model=self.model,
             messages=messages,
+            format="json",
         )
 
         return response.message.content

@@ -31,6 +31,8 @@ class CustomerFeedbackEvaluator:
         
         results = []
 
+        failed_predictions = 0
+
         for idx, row in df.iterrows():
 
             print(
@@ -39,9 +41,28 @@ class CustomerFeedbackEvaluator:
 
             start = time.time()
 
-            prediction = self.analyst.analyze(
-                row["feedback"]
-            )
+            try:
+                prediction = self.analyst.analyze(
+                    row["feedback"]
+                )
+
+            except Exception as e:
+                
+                failed_predictions += 1
+
+                results.append(
+                    {
+                        "predicted_topic": None,
+                        "predicted_sentiment": None,
+                        "latency": None,
+                    }
+                )
+
+                print(
+                    f"Failed on row {idx}: {e}"
+                )
+
+                continue
 
             latency = (
                 time.time()
@@ -60,6 +81,16 @@ class CustomerFeedbackEvaluator:
                         latency,
                 }
             )
+        
+        successful_predictions = (
+            len(df)
+            - failed_predictions
+        )
+
+        success_rate = (
+            successful_predictions
+            / len(df)
+        )
 
         predictions = pd.DataFrame(
             results
@@ -103,4 +134,8 @@ class CustomerFeedbackEvaluator:
             sentiment_accuracy=sentiment_accuracy,
             average_latency=average_latency,
             num_samples=len(df),
+            model_name=self.analyst.provider.model,
+            failed_predictions=failed_predictions,
+            successful_predictions=successful_predictions,
+            success_rate=success_rate,
         )
