@@ -18,82 +18,82 @@ class CustomerFeedbackEvaluator:
     ):
         self.analyst = analyst
 
-def evaluate(
-    self,
-    dataset_path: str,
-    output_path: str | None = None,
-) -> EvaluationResult:
-    
-    df = pd.read_csv(
-        dataset_path
-    )
-    
-    results = []
-
-    for idx, row in df.iterrows():
-
-        print(
-            f"Processing {idx + 1}/{len(df)}..."
+    def evaluate(
+        self,
+        dataset_path: str,
+        output_path: str | None = None,
+    ) -> EvaluationResult:
+        
+        df = pd.read_csv(
+            dataset_path
         )
+        
+        results = []
 
-        start = time.time()
+        for idx, row in df.iterrows():
 
-        prediction = self.analyst.analyze(
-            row["feedback"]
-        )
-
-        if output_path:
-            df.to_csv(
-                output_path,
-                index=False,
+            print(
+                f"Processing {idx + 1}/{len(df)}..."
             )
 
-        latency = (
-            time.time()
-            - start
+            start = time.time()
+
+            prediction = self.analyst.analyze(
+                row["feedback"]
+            )
+
+            if output_path:
+                df.to_csv(
+                    output_path,
+                    index=False,
+                )
+
+            latency = (
+                time.time()
+                - start
+            )
+
+            results.append(
+                {
+                    "predicted_topic":
+                        prediction.topic.value,
+
+                    "predicted_sentiment":
+                        prediction.sentiment.value,
+
+                    "latency":
+                        latency,
+                }
+            )
+
+        predictions = pd.DataFrame(
+            results
         )
 
-        results.append(
-            {
-                "predicted_topic":
-                    prediction.topic.value,
-
-                "predicted_sentiment":
-                    prediction.sentiment.value,
-
-                "latency":
-                    latency,
-            }
+        df = pd.concat(
+            [df, predictions],
+            axis=1,
         )
 
-    predictions = pd.DataFrame(
-        results
-    )
+        topic_accuracy = (
+            df["expected_topic"]
+            ==
+            df["predicted_topic"]
+        ).mean()
 
-    df = pd.concat(
-        [df, predictions],
-        axis=1,
-    )
+        sentiment_accuracy = (
+            df["expected_sentiment"]
+            ==
+            df["predicted_sentiment"]
+        ).mean()
 
-    topic_accuracy = (
-        df["expected_topic"]
-        ==
-        df["predicted_topic"]
-    ).mean()
+        average_latency = (
+            df["latency"]
+        ).mean()
 
-    sentiment_accuracy = (
-        df["expected_sentiment"]
-        ==
-        df["predicted_sentiment"]
-    ).mean()
-
-    average_latency = (
-        df["latency"]
-    ).mean()
-
-    return EvaluationResult(
-        topic_accuracy=topic_accuracy,
-        sentiment_accuracy=sentiment_accuracy,
-        average_latency=average_latency,
-        num_samples=len(df),
-    )
+        return EvaluationResult(
+            topic_accuracy=topic_accuracy,
+            sentiment_accuracy=sentiment_accuracy,
+            average_latency=average_latency,
+            num_samples=len(df),
+        )

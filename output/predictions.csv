@@ -1,0 +1,11 @@
+feedback,expected_topic,expected_sentiment
+My package arrived 5 days late,Delivery,Negative
+Support never replied,Customer Support,Negative
+The app crashes when I login,Technical Issue,Negative
+The product quality is excellent,Product Quality,Positive
+My package never arrive,Delivery,Negative
+The package was delivered ahead of the ETA,Delivery,Positive
+The support team was very helpful and resolved my issue quickly,Customer Support,Positive
+The app is very user-friendly and works smoothly,Technical Issue,Positive
+The delivery fee is too high,Pricing,Negative
+I want to refund my order,Refund,Negative
