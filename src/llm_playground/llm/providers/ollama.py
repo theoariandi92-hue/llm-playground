@@ -5,7 +5,8 @@ class OllamaProvider:
 
     def __init__(
         self,
-        model: str = "qwen3:8b",
+        # model: str = "qwen3:8b",
+        model: str = "qwen2.5:7b" #better for extraction tasks like classification
     ):
         self.model = model
 
