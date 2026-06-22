@@ -3,7 +3,7 @@ from llm_playground.llm.providers.ollama import (
 )
 
 from llm_playground.customer_feedback.prompts import (
-    CUSTOMER_FEEDBACK_SYSTEM_PROMPT,
+    customer_feedback_system_prompt,
     CUSTOMER_FEEDBACK_USER_TEMPLATE,
 )
 
@@ -32,7 +32,7 @@ class CustomerFeedbackAnalyst:
         messages = [
             {
                 "role": "system",
-                "content": CUSTOMER_FEEDBACK_SYSTEM_PROMPT,
+                "content": customer_feedback_system_prompt(),
             },
             {
                 "role": "user",
