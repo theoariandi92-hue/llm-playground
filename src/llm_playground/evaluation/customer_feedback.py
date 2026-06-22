@@ -1,3 +1,4 @@
+from pathlib import Path
 import time
 
 import pandas as pd
@@ -43,6 +44,12 @@ class CustomerFeedbackEvaluator:
             )
 
             if output_path:
+
+                Path(output_path).parent.mkdir(
+                    parents=True,
+                    exist_ok=True,
+                )
+
                 df.to_csv(
                     output_path,
                     index=False,
