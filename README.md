@@ -1,109 +1,95 @@
 # LLM Playground
 
-A hands-on project for learning how to build AI applications using local LLMs.
+A hands-on playground for learning LLM application development, evaluation, and model comparison using local and cloud-based language models.
 
-The current implementation uses Ollama and Qwen 3 to analyze customer feedback and extract:
-
-- Topic
-- Sentiment
-- Summary
-
-The goal of this project is to learn the complete AI application stack:
-
-- Local LLM inference
-- Prompt engineering
-- Python packaging
-- Provider abstraction
-- API serving
-- Structured outputs
+The project focuses on building reusable LLM components, structured outputs, automated evaluation pipelines, and benchmarking frameworks to compare model performance across accuracy, latency, and reliability dimensions.
 
 ---
 
-## Example
+# Features
 
-### Input
+* Customer feedback analysis
 
-```text
-The delivery arrived 5 days later than promised and customer support never replied to my emails. The product itself works well.
-```
-
-### Output
-
-```json
-{
-  "topic": "Delivery Delay",
-  "sentiment": "Negative",
-  "summary": "Customer experienced a significant delivery delay and did not receive a response from customer support."
-}
-```
+  * Topic classification
+  * Sentiment classification
+  * Feedback summarization
+* Local inference using Ollama
+* OpenAI provider support
+* Structured outputs using Pydantic
+* Automated evaluation framework
+* Model benchmarking across multiple LLMs
+* Output schema validation
+* Reusable provider architecture
 
 ---
 
-## Architecture
-
-```text
-CustomerFeedbackAnalyst
-        ↓
-    OllamaProvider
-        ↓
-       Ollama
-        ↓
-      Qwen3 8B
-```
-
-### Responsibilities
-
-| Component | Responsibility |
-|------------|---------------|
-| CustomerFeedbackAnalyst | Business logic and prompt construction |
-| OllamaProvider | Communication with Ollama |
-| Ollama | Model runtime |
-| Qwen3 8B | Language model |
-
----
-
-## Project Structure
+# Project Structure
 
 ```text
 src/
 └── llm_playground/
-    ├── llm/
-    │   ├── base.py
-    │   └── providers/
-    │       ├── ollama.py
-    │       └── openai.py
+    ├── customer_feedback/
+    │   ├── analyzer.py
+    │   ├── models.py
+    │   └── prompts.py
     │
-    └── customer_feedback/
-        ├── prompts.py
-        ├── analyzer.py
-        └── models.py
+    ├── evaluation/
+    │   ├── customer_feedback.py
+    │   └── models.py
+    │
+    └── llm/
+        ├── providers/
+        │   ├── ollama.py
+        │   └── openai.py
+        └── base.py
 
 demo/
-├── demo_ollama.py
-├── demo_provider.py
-└── demo_customer_feedback.py
+├── demo_ollama_customer_feedback.py
+├── demo_openai_customer_feedback.py
+├── demo_ollama_customer_feedback_evaluate.py
+└── demo_ollama_customer_feedback_compare_models.py
+
+data/
+└── customer_feedback_eval.csv
+
+output/
+└── *.csv
 ```
 
 ---
 
-## Prerequisites
+# Installation
 
-### Install Ollama
-
-```bash
-brew install ollama
-```
-
-Start the Ollama server:
+## Clone Repository
 
 ```bash
-ollama serve
+git clone https://github.com/theoariandi92-hue/llm-playground.git
+
+cd llm-playground
 ```
 
-Download the model:
+## Install Dependencies
+
+```bash
+uv sync
+```
+
+---
+
+# Ollama Setup
+
+Install Ollama:
+
+https://ollama.com
+
+Pull the models:
 
 ```bash
 ollama pull qwen3:8b
+
+ollama pull qwen2.5:7b
+
+ollama pull llama3.2:3b
 ```
 
 Verify:
@@ -112,119 +98,218 @@ Verify:
 ollama list
 ```
 
----
-
-## Installation
+Start Ollama:
 
 ```bash
-git clone <repo-url>
-cd llm-playground
-uv sync
+ollama serve
 ```
 
 ---
 
-## Running the Demo
+# OpenAI Setup
 
-```bash
-uv run python demo/demo_customer_feedback.py
+Create a `.env` file:
+
+```env
+OPENAI_API_KEY=your_api_key
+```
+
+Example:
+
+```python
+from dotenv import load_dotenv
+
+load_dotenv()
 ```
 
 ---
 
-## Usage
+# Customer Feedback Analysis
+
+Analyze a single customer feedback:
 
 ```python
 from llm_playground.customer_feedback.analyzer import (
     CustomerFeedbackAnalyst,
 )
 
+feedback = """
+My package arrived 5 days late and
+customer support never replied.
+"""
+
 analyst = CustomerFeedbackAnalyst()
 
 result = analyst.analyze(
-    '''
-    Delivery was delayed by 4 days.
-    Customer support never replied.
-    Product quality was good.
-    '''
+    feedback=feedback
 )
 
-print(result)
+print(result.topic)
+print(result.sentiment)
+print(result.summary)
+```
+
+Example Output:
+
+```text
+Topic.DELIVERY
+
+Sentiment.NEGATIVE
+
+Customer experienced a delayed delivery and
+received no response from customer support.
 ```
 
 ---
 
-## Design Decisions
+# Evaluation Framework
 
-### Why separate providers from business logic?
+Run evaluation against a labeled dataset:
 
-The project separates:
-
-```text
-customer_feedback/
+```bash
+uv run python demo/demo_ollama_customer_feedback_evaluate.py
 ```
 
-from:
+Metrics:
+
+* Topic Accuracy
+* Sentiment Accuracy
+* Average Latency
+* Failed Predictions
+
+Generated outputs:
 
 ```text
-llm/providers/
+output/
+└── predictions.csv
 ```
-
-so that business logic remains independent from the underlying LLM implementation.
-
-Today:
-
-```text
-CustomerFeedbackAnalyst
-        ↓
-    OllamaProvider
-        ↓
-      Qwen3
-```
-
-Tomorrow:
-
-```text
-CustomerFeedbackAnalyst
-        ↓
-    OpenAIProvider
-        ↓
-       GPT
-```
-
-The analyst implementation should not change when switching models.
 
 ---
 
-## Current Features
+# Model Benchmarking
 
-- Local LLM inference using Ollama
-- Qwen3 8B support
-- Customer feedback analysis
-- Topic extraction
-- Sentiment classification
-- Feedback summarization
+Compare multiple models:
+
+```bash
+uv run python demo/demo_ollama_customer_feedback_compare_models.py
+```
+
+Example Benchmark Results:
+
+| Model       | Topic Accuracy | Sentiment Accuracy | Avg Latency (s) | Failed Predictions |
+| ----------- | -------------- | ------------------ | --------------- | ------------------ |
+| qwen3:8b    | 80%            | 100%               | 50.5            | 0                  |
+| qwen2.5:7b  | 90%            | 90%                | 5.8             | 0                  |
+| llama3.2:3b | 60%            | 70%                | 2.3             | 3                  |
 
 ---
 
-## Roadmap
+# Key Findings
 
-### Phase 1
-- [ ] Local inference with Ollama
-- [ ] Provider abstraction
-- [ ] Customer feedback analysis
+### qwen3:8b
 
-### Phase 2
-- [ ] Structured Pydantic responses
-- [ ] OpenAI provider
-- [ ] Evaluation framework
+Pros:
 
-### Phase 3
-- [ ] FastAPI service
-- [ ] REST API endpoint
-- [ ] Docker support
+* Reliable structured outputs
+* Strong sentiment classification
 
-### Phase 4
-- [ ] RAG
-- [ ] Fine-tuning experiments
-- [ ] Model benchmarking
+Cons:
+
+* High latency
+
+### qwen2.5:7b
+
+Pros:
+
+* Best balance between accuracy and latency
+* Reliable schema adherence
+* Suitable for extraction and classification tasks
+
+Cons:
+
+* Slightly lower sentiment accuracy than qwen3
+
+### llama3.2:3b
+
+Pros:
+
+* Fastest inference
+
+Cons:
+
+* Occasionally fails output schema validation
+* Less reliable for structured extraction workflows
+
+---
+
+# Design Principles
+
+This project emphasizes:
+
+* Provider abstraction
+* Structured outputs
+* Reusable evaluation workflows
+* Model benchmarking
+* Reliability measurement
+* Production-oriented LLM development
+
+Rather than focusing solely on prompt engineering, the goal is to evaluate LLM systems end-to-end and make data-driven model selection decisions.
+
+---
+
+# Tech Stack
+
+* Python
+* Ollama
+* OpenAI API
+* Pydantic
+* Pandas
+* uv
+
+---
+
+# Future Roadmap
+
+## Platform
+
+* Provider interface (`BaseLLMProvider`)
+* Model factory pattern
+* Prompt versioning
+
+## Evaluation
+
+* Confusion matrix reporting
+* Automated benchmark reports
+* LLM-as-a-Judge evaluation
+* Cost tracking
+* Robust error analysis
+
+## Applications
+
+* FastAPI service
+* Batch inference pipelines
+* Embedding models
+* Retrieval-Augmented Generation (RAG)
+* Agent workflows
+
+## Engineering
+
+* Unit tests
+* Integration tests
+* CI/CD pipeline
+* Docker support
+
+---
+
+# Learning Objectives
+
+This repository serves as a practical playground for:
+
+* LLM application development
+* Prompt engineering
+* Structured generation
+* Model evaluation
+* Benchmarking methodologies
+* Production AI system design
+
+The goal is to build intuition around selecting, evaluating, and deploying language models based on measurable business and engineering outcomes rather than model capability alone.
