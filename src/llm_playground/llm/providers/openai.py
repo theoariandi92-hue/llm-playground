@@ -2,8 +2,14 @@
 
 from openai import OpenAI
 
+from llm_playground.llm.base import (
+    BaseLLMProvider,
+)
 
-class OpenAIProvider:
+
+class OpenAIProvider(
+    BaseLLMProvider,
+):
 
     def __init__(
         self,

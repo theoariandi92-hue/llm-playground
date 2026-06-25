@@ -1,12 +1,17 @@
 from ollama import chat
 
+from llm_playground.llm.base import (
+    BaseLLMProvider,
+)
 
-class OllamaProvider:
+
+class OllamaProvider(
+    BaseLLMProvider,
+):
 
     def __init__(
         self,
-        # model: str = "qwen3:8b",
-        model: str = "qwen2.5:7b" #better for extraction tasks like classification
+        model: str = "qwen2.5:7b",
     ):
         self.model = model
 
