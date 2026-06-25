@@ -1,8 +1,15 @@
 # LLM Playground
 
-A hands-on playground for learning LLM application development, evaluation, and model comparison using local and cloud-based language models.
+A personal project for learning how to build, evaluate, and deploy LLM-powered applications.
 
-The project focuses on building reusable LLM components, structured outputs, automated evaluation pipelines, and benchmarking frameworks to compare model performance across accuracy, latency, and reliability dimensions.
+Most LLM tutorials focus on prompting a model. This project focuses on everything around the model: structured outputs, evaluation pipelines, benchmarking, testing, provider abstraction, and API serving.
+
+The goal is to better understand practical questions such as:
+
+* Which model performs best for a given task?
+* How much latency am I paying for higher accuracy?
+* How reliable are structured outputs across different models?
+* How can LLM applications be tested and evaluated systematically?
 
 ---
 
@@ -13,13 +20,35 @@ The project focuses on building reusable LLM components, structured outputs, aut
   * Topic classification
   * Sentiment classification
   * Feedback summarization
+* Structured outputs using Pydantic
 * Local inference using Ollama
 * OpenAI provider support
-* Structured outputs using Pydantic
+* Provider abstraction layer
 * Automated evaluation framework
-* Model benchmarking across multiple LLMs
-* Output schema validation
-* Reusable provider architecture
+* Multi-model benchmarking
+* Unit testing with MockProvider
+* REST API using FastAPI
+
+---
+
+# Architecture
+
+```text
+Client
+  ↓
+FastAPI
+  ↓
+CustomerFeedbackAnalyst
+  ↓
+BaseLLMProvider
+     ├── OllamaProvider
+     ├── OpenAIProvider
+     └── MockProvider
+  ↓
+LLM
+```
+
+The project separates application logic from model providers, making it easier to switch between Ollama, OpenAI, or future providers without changing downstream code.
 
 ---
 
@@ -28,6 +57,10 @@ The project focuses on building reusable LLM components, structured outputs, aut
 ```text
 src/
 └── llm_playground/
+    ├── api/
+    │   ├── app.py
+    │   └── models.py
+    │
     ├── customer_feedback/
     │   ├── analyzer.py
     │   ├── models.py
@@ -38,22 +71,20 @@ src/
     │   └── models.py
     │
     └── llm/
-        ├── providers/
-        │   ├── ollama.py
-        │   └── openai.py
-        └── base.py
+        └── providers/
+            ├── base.py
+            ├── ollama.py
+            ├── openai.py
+            └── mock.py
+
+tests/
+├── test_topics.py
+├── test_sentiments.py
+└── test_analyzer.py
 
 demo/
-├── demo_ollama_customer_feedback.py
-├── demo_openai_customer_feedback.py
-├── demo_ollama_customer_feedback_evaluate.py
-└── demo_ollama_customer_feedback_compare_models.py
-
 data/
-└── customer_feedback_eval.csv
-
 output/
-└── *.csv
 ```
 
 ---
@@ -92,16 +123,16 @@ ollama pull qwen2.5:7b
 ollama pull llama3.2:3b
 ```
 
-Verify:
-
-```bash
-ollama list
-```
-
 Start Ollama:
 
 ```bash
 ollama serve
+```
+
+Verify:
+
+```bash
+ollama list
 ```
 
 ---
@@ -112,14 +143,6 @@ Create a `.env` file:
 
 ```env
 OPENAI_API_KEY=your_api_key
-```
-
-Example:
-
-```python
-from dotenv import load_dotenv
-
-load_dotenv()
 ```
 
 ---
@@ -149,15 +172,14 @@ print(result.sentiment)
 print(result.summary)
 ```
 
-Example Output:
+Example output:
 
 ```text
 Topic.DELIVERY
 
 Sentiment.NEGATIVE
 
-Customer experienced a delayed delivery and
-received no response from customer support.
+Customer experienced delayed delivery and did not receive support response.
 ```
 
 ---
@@ -170,18 +192,17 @@ Run evaluation against a labeled dataset:
 uv run python demo/demo_ollama_customer_feedback_evaluate.py
 ```
 
-Metrics:
+Metrics tracked:
 
 * Topic Accuracy
 * Sentiment Accuracy
 * Average Latency
 * Failed Predictions
 
-Generated outputs:
+Evaluation outputs are saved to:
 
 ```text
 output/
-└── predictions.csv
 ```
 
 ---
@@ -194,66 +215,110 @@ Compare multiple models:
 uv run python demo/demo_ollama_customer_feedback_compare_models.py
 ```
 
-Example Benchmark Results:
+Example benchmark results:
 
-| Model       | Topic Accuracy | Sentiment Accuracy | Avg Latency (s) | Failed Predictions |
-| ----------- | -------------- | ------------------ | --------------- | ------------------ |
-| qwen3:8b    | 80%            | 100%               | 50.5            | 0                  |
-| qwen2.5:7b  | 90%            | 90%                | 5.8             | 0                  |
-| llama3.2:3b | 60%            | 70%                | 2.3             | 3                  |
+| Model       | Topic Accuracy | Sentiment Accuracy | Avg Latency (s) |
+| ----------- | -------------- | ------------------ | --------------- |
+| qwen3:8b    | 80%            | 100%               | 50.5            |
+| qwen2.5:7b  | 90%            | 90%                | 5.8             |
+| llama3.2:3b | 60%            | 70%                | 2.3             |
+
+The purpose of benchmarking is not to find the "best" model, but to understand the trade-offs between accuracy, latency, cost, and output reliability.
 
 ---
 
-# Key Findings
+# Unit Testing
 
-### qwen3:8b
+Run all tests:
 
-Pros:
+```bash
+uv run pytest
+```
 
-* Reliable structured outputs
-* Strong sentiment classification
+Current test coverage includes:
 
-Cons:
+* Topic enum validation
+* Sentiment enum validation
+* CustomerFeedbackAnalyst parsing
+* MockProvider integration
 
-* High latency
+The project uses MockProvider to keep tests deterministic and independent of external LLMs.
 
-### qwen2.5:7b
+---
 
-Pros:
+# FastAPI API
 
-* Best balance between accuracy and latency
-* Reliable schema adherence
-* Suitable for extraction and classification tasks
+Start the API server:
 
-Cons:
+```bash
+uv run uvicorn llm_playground.api.app:app --reload
+```
 
-* Slightly lower sentiment accuracy than qwen3
+API:
 
-### llama3.2:3b
+```text
+http://127.0.0.1:8000
+```
 
-Pros:
+Swagger UI:
 
-* Fastest inference
+```text
+http://127.0.0.1:8000/docs
+```
 
-Cons:
+---
 
-* Occasionally fails output schema validation
-* Less reliable for structured extraction workflows
+# Analyze Feedback Endpoint
+
+## Request
+
+```http
+POST /analyze-feedback
+```
+
+```json
+{
+  "feedback": "My package arrived 5 days late and support never replied."
+}
+```
+
+## Response
+
+```json
+{
+  "topic": "Delivery",
+  "sentiment": "Negative",
+  "summary": "Customer experienced delayed delivery and did not receive support response."
+}
+```
+
+---
+
+# Development Workflow
+
+```text
+Prompt Development
+        ↓
+Unit Tests
+        ↓
+Evaluation Dataset
+        ↓
+Benchmark Multiple Models
+        ↓
+Deploy Through FastAPI
+```
 
 ---
 
 # Design Principles
 
-This project emphasizes:
+A few principles I try to follow throughout the project:
 
-* Provider abstraction
-* Structured outputs
-* Reusable evaluation workflows
-* Model benchmarking
-* Reliability measurement
-* Production-oriented LLM development
-
-Rather than focusing solely on prompt engineering, the goal is to evaluate LLM systems end-to-end and make data-driven model selection decisions.
+* Keep business logic independent from model providers
+* Use structured outputs instead of parsing free-form text
+* Evaluate models using labeled datasets rather than subjective judgement
+* Make components testable using mocks and dependency injection
+* Prefer simple, reusable building blocks over framework-heavy solutions
 
 ---
 
@@ -262,54 +327,36 @@ Rather than focusing solely on prompt engineering, the goal is to evaluate LLM s
 * Python
 * Ollama
 * OpenAI API
+* FastAPI
 * Pydantic
 * Pandas
+* Pytest
 * uv
 
 ---
 
-# Future Roadmap
+# Next Steps
 
-## Platform
-
-* Provider interface (`BaseLLMProvider`)
-* Model factory pattern
-* Prompt versioning
-
-## Evaluation
-
-* Confusion matrix reporting
-* Automated benchmark reports
-* LLM-as-a-Judge evaluation
-* Cost tracking
-* Robust error analysis
-
-## Applications
-
-* FastAPI service
-* Batch inference pipelines
-* Embedding models
-* Retrieval-Augmented Generation (RAG)
-* Agent workflows
-
-## Engineering
-
-* Unit tests
-* Integration tests
-* CI/CD pipeline
-* Docker support
+* Add Gemini and Anthropic providers
+* Expand evaluation datasets
+* Add benchmark reporting
+* Experiment with RAG pipelines
+* Build simple agent workflows
+* Containerize the application with Docker
 
 ---
 
-# Learning Objectives
+# Why This Project?
 
-This repository serves as a practical playground for:
+Most LLM demos stop at generating a response.
 
-* LLM application development
-* Prompt engineering
-* Structured generation
-* Model evaluation
-* Benchmarking methodologies
-* Production AI system design
+This project focuses on the surrounding engineering challenges:
 
-The goal is to build intuition around selecting, evaluating, and deploying language models based on measurable business and engineering outcomes rather than model capability alone.
+* Structured outputs
+* Evaluation and benchmarking
+* Provider abstraction
+* Testing
+* API development
+* Building reusable application components
+
+The goal is to better understand how to select, evaluate, and deploy language models using measurable engineering metrics rather than relying solely on subjective comparisons.
